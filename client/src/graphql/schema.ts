@@ -30,3 +30,27 @@ export type Payload = {
   available: Number;
 }
 
+export type ForecastDay = {
+  date: string;
+  day: Day;
+  astro: Astro;
+}
+
+export type Astro = {
+  sunrise: string;
+  sunset:string
+}
+
+export type Day = {
+  condition: Condition
+  maxtemp_c: Number,
+  mintemp_c: Number,
+  maxtemp_f: Number,
+  mintemp_f: Number
+}
+
+export type Condition = {
+  text: string;
+  icon: string;
+  code: Number;
+}
