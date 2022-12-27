@@ -153,6 +153,10 @@ const Missions = (): JSX.Element => {
 
   const handleNewMissionClose = async () => {
     await setNewMissionOpen(false);    
+  };
+
+  const handleNewMissionSave = async () => {
+    await setNewMissionOpen(false);    
     await addNewMission(nameInput, destInput, tempLaunchDate);
 
     getMissions(sortField, sortDesc)
