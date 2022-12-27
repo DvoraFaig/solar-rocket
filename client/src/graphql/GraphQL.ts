@@ -1,4 +1,4 @@
-const fetchGraphQL = async (text: String, variables: any[]) => {
+const fetchGraphQL = async (text: String, variables: any) => {
   const response : Response = await fetch("/graphql", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -8,7 +8,7 @@ const fetchGraphQL = async (text: String, variables: any[]) => {
     }),
   });
 
-  if(response.ok)
+  if(response.ok) 
     return await response.json();
 
   throw(await response.json());

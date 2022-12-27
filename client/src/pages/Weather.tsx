@@ -26,7 +26,7 @@ interface ForecastWeatherResponse {
 }
 
 const getForecast = async (city: string): Promise<ForecastWeatherResponse> => {
-  if (city == "") city = "London";
+  if (city == "") city = "Jerusalem";
   const response: Response = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${city}&days=5&aqi=yes&alerts=no`);
 
   if (response.ok) {

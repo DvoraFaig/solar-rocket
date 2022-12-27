@@ -46,6 +46,12 @@ interface MissionsResponse {
   };
 }
 
+interface NewMissionResponse{
+  title:String,
+  date:any
+  operator: String,
+}
+
 const getMissions = async (
   sortField: SortField,
   sortDesc?: Boolean
@@ -72,6 +78,59 @@ const getMissions = async (
   );
 };
 
+const addNewMission = async (
+  title: String|null,
+  operator: String|null,
+  date: Date |null
+): Promise<NewMissionResponse> => {
+  return await fetchGraphQL(
+    `
+      mutation ($title: String!, $operator:String!, $date:DateTime!)
+      {
+        createMission(mission: 
+        {
+          title: $title,
+          operator: $operator,
+          launch: 
+          {
+            date: $date,
+            vehicle: "Epsilon IV",
+            location: {
+              name: "Vandenberg SLC-6",
+              longitude: -120.6266,
+              latitude: -34.5813
+            }
+          },
+          orbit: 
+          {
+            periapsis: 700,
+            apoapsis: 422,
+            inclination: 90
+          },
+          payload: 
+          {
+            capacity: 28000,
+            available: 0
+          }
+        }) 
+        {
+          id
+          title
+          operator
+          launch {
+            date
+          }
+        }
+      }
+    `,
+    {
+      title: title,
+      operator: operator,
+      date: date,
+    }
+  );
+}
+
 const Missions = (): JSX.Element => {
   const [missions, setMissions] = useState<Mission[] | null>(null);
   const [newMissionOpen, setNewMissionOpen] = useState(false);
@@ -79,6 +138,8 @@ const Missions = (): JSX.Element => {
   const [sortDesc, setSortDesc] = useState<boolean>(false);
   const [sortField, setSortField] = useState<SortField>("Title");
   const [errMessage, setErrMessage] = useState<String | null>(null);
+  const [nameInput, setNameInput] = useState<String|null>(null);
+  const [destInput, setDescInput] = useState<String|null>(null);
 
   const handleErrClose = (event?: SyntheticEvent | Event, reason?: string) => {
     if (reason === "clickaway") return;
@@ -90,8 +151,18 @@ const Missions = (): JSX.Element => {
     setNewMissionOpen(true);
   };
 
-  const handleNewMissionClose = () => {
-    setNewMissionOpen(false);
+  const handleNewMissionClose = async () => {
+    await setNewMissionOpen(false);    
+    await addNewMission(nameInput, destInput, tempLaunchDate);
+
+    getMissions(sortField, sortDesc)
+      .then((result: MissionsResponse) => {
+        setMissions(result.data.Missions);
+      })
+      .catch((err) => {
+        setErrMessage("Failed to load missions.");
+        console.log(err);
+      });
   };
 
   const handleTempLaunchDateChange = (newValue: Date | null) => {
@@ -101,9 +172,18 @@ const Missions = (): JSX.Element => {
   const handleSortFieldChange = (event: SyntheticEvent, value: SortField) => {
     setSortField(value);
   };
+
   const handleSortDescClick = () => {
     setSortDesc(!sortDesc);
   };
+
+  const setNameValue = (event: Event|any) => {  
+    setNameInput(event.target.value)
+  }
+
+  const setDescValue = (event: Event|any) => {  
+    setDescInput(event.target.value)
+  }
 
   useEffect(() => {
     getMissions(sortField, sortDesc)
@@ -191,6 +271,7 @@ const Missions = (): JSX.Element => {
                   label="Name"
                   variant="standard"
                   fullWidth
+                  onChange={setNameValue}
                 />
               </Grid>
               <Grid item>
@@ -200,6 +281,7 @@ const Missions = (): JSX.Element => {
                   label="Description"
                   variant="standard"
                   fullWidth
+                  onChange={setDescValue}
                 />
               </Grid>
 
@@ -225,7 +307,7 @@ const Missions = (): JSX.Element => {
           </DialogActions>
         </Dialog>
       </Container>
-      <Snackbar
+     <Snackbar
         open={errMessage != null}
         autoHideDuration={5000}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
